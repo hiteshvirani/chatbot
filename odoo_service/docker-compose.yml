@@ -19,10 +19,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: odoo_app
-    depends_on:
-      - postgres-odoo
     environment:
-      - HOST=postgres-odoo
       - USER=${ODOO_DB_USER:-odoo}
       - PASSWORD=${ODOO_DB_PASSWORD:-odoo123}
       - FASTAPI_URL=${FASTAPI_URL:-http://localhost:8000}
@@ -30,9 +27,9 @@ services:
     volumes:
       - odoo_data:/var/lib/odoo
       - ./custom_addons:/mnt/extra-addons
-    ports:
-      - "8069:8069"
-    command: ["odoo", "--addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons", "--db_host=postgres-odoo", "--db_port=5432", "--xmlrpc-port=8069"]
+    network_mode: host
+    entrypoint: ["/usr/bin/python3", "-m", "odoo"]
+    command: ["--addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons", "--db_host=localhost", "--db_port=5434", "--db_user=odoo", "--db_password=odoo123", "--xmlrpc-port=8069", "--without-demo=all"]
     restart: unless-stopped
 
 volumes:

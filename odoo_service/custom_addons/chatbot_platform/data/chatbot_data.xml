@@ -3,7 +3,7 @@
     <!-- System Parameters for FastAPI Integration -->
     <record id="param_fastapi_url" model="ir.config_parameter">
         <field name="key">fastapi.url</field>
-        <field name="value">http://fastapi:8000</field>
+        <field name="value">http://localhost:8000</field>
     </record>
     
     <record id="param_fastapi_internal_key" model="ir.config_parameter">

@@ -20,10 +20,13 @@ class VectorStore:
     ) -> bool:
         """Insert an embedding into the vector store"""
         try:
+            # Convert embedding list to pgvector format string: '[0.1,0.2,0.3]'
+            embedding_str = '[' + ','.join(map(str, embedding)) + ']'
+            
             query = """
                 INSERT INTO chatbot_embeddings 
                 (chatbot_id, source_type, source_id, content, content_chunk_index, embedding, metadata)
-                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                VALUES ($1, $2, $3, $4, $5, $6::vector, $7)
             """
             
             await execute_query(
@@ -33,7 +36,7 @@ class VectorStore:
                 source_id,
                 content,
                 chunk_index,
-                embedding,
+                embedding_str,
                 json.dumps(metadata or {})
             )
             

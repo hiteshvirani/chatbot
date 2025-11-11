@@ -20,8 +20,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - fastapi_network
 
   # FastAPI Service
   fastapi:
@@ -29,11 +27,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: fastapi_app
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-chatbot_user}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-chatbot_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-chatbot_user}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB:-chatbot_db}
       ODOO_URL: ${ODOO_URL:-http://localhost:8069}
       ODOO_API_KEY: ${ODOO_API_KEY}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://localhost:11434}
@@ -42,18 +37,14 @@ services:
       CHUNK_SIZE: ${CHUNK_SIZE:-1000}
       CHUNK_OVERLAP: ${CHUNK_OVERLAP:-200}
       INTERNAL_API_KEY: ${FASTAPI_INTERNAL_KEY}
+      PYTHONPATH: /app
     volumes:
-      - ./app:/app
+      - ./app:/app/app
       - ./uploads:/app/uploads
-    ports:
-      - "8000:8000"
-    networks:
-      - fastapi_network
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    working_dir: /app
+    network_mode: host
+    command: sh -c "cd /app && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
 volumes:
   fastapi_postgres_data:
 
-networks:
-  fastapi_network:
-    driver: bridge

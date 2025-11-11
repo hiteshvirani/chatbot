@@ -131,7 +131,9 @@ class ChatbotChatbot(models.Model):
 
     def sync_to_fastapi(self):
         """Sync chatbot configuration to FastAPI"""
-        fastapi_url = self.env['ir.config_parameter'].sudo().get_param('fastapi.url', 'http://fastapi:8000')
+        # Get FastAPI URL from environment variable first, then config parameter
+        import os
+        fastapi_url = os.getenv('FASTAPI_URL') or self.env['ir.config_parameter'].sudo().get_param('fastapi.url', 'http://localhost:8000')
         internal_key = self.env['ir.config_parameter'].sudo().get_param('fastapi.internal_key')
         
         if not internal_key:
@@ -167,7 +169,9 @@ class ChatbotChatbot(models.Model):
 
     def unlink(self):
         """Override to cleanup FastAPI data before deletion"""
-        fastapi_url = self.env['ir.config_parameter'].sudo().get_param('fastapi.url', 'http://fastapi:8000')
+        # Get FastAPI URL from environment variable first, then config parameter
+        import os
+        fastapi_url = os.getenv('FASTAPI_URL') or self.env['ir.config_parameter'].sudo().get_param('fastapi.url', 'http://localhost:8000')
         internal_key = self.env['ir.config_parameter'].sudo().get_param('fastapi.internal_key')
         
         for chatbot in self:
