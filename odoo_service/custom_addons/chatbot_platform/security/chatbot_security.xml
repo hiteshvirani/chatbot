@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Record Rules for Multi-tenant Isolation -->
+    
+    <!-- Chatbot: Users can only access their own chatbots -->
+    <record id="chatbot_rule_own" model="ir.rule">
+        <field name="name">Own Chatbots Only</field>
+        <field name="model_id" ref="model_chatbot_chatbot"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    
+    <!-- Document: Users can only access documents of their own chatbots -->
+    <record id="document_rule_own" model="ir.rule">
+        <field name="name">Own Chatbot Documents Only</field>
+        <field name="model_id" ref="model_chatbot_document"/>
+        <field name="domain_force">[('chatbot_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    
+    <!-- Link: Users can only access links of their own chatbots -->
+    <record id="link_rule_own" model="ir.rule">
+        <field name="name">Own Chatbot Links Only</field>
+        <field name="model_id" ref="model_chatbot_link"/>
+        <field name="domain_force">[('chatbot_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    
+    <!-- Prompt: Users can only access prompts of their own chatbots -->
+    <record id="prompt_rule_own" model="ir.rule">
+        <field name="name">Own Chatbot Prompts Only</field>
+        <field name="model_id" ref="model_chatbot_prompt"/>
+        <field name="domain_force">[('chatbot_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+</odoo>

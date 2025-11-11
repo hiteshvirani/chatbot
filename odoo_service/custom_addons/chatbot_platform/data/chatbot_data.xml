@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- System Parameters for FastAPI Integration -->
+    <record id="param_fastapi_url" model="ir.config_parameter">
+        <field name="key">fastapi.url</field>
+        <field name="value">http://fastapi:8000</field>
+    </record>
+    
+    <record id="param_fastapi_internal_key" model="ir.config_parameter">
+        <field name="key">fastapi.internal_key</field>
+        <field name="value">change_me_internal_api_key</field>
+    </record>
+</odoo>

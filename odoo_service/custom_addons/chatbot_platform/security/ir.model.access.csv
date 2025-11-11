@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_chatbot_chatbot_user,chatbot.chatbot.user,model_chatbot_chatbot,base.group_user,1,1,1,1
+access_chatbot_document_user,chatbot.document.user,model_chatbot_document,base.group_user,1,1,1,1
+access_chatbot_link_user,chatbot.link.user,model_chatbot_link,base.group_user,1,1,1,1
+access_chatbot_prompt_user,chatbot.prompt.user,model_chatbot_prompt,base.group_user,1,1,1,1

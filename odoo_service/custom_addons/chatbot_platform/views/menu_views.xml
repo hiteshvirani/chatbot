@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Main Menu -->
+    <menuitem id="menu_chatbot_root" name="Chatbots" sequence="10"/>
+    
+    <!-- Chatbot Menu -->
+    <menuitem id="menu_chatbot" name="Chatbots" parent="menu_chatbot_root" 
+              action="action_chatbot" sequence="10"/>
+    
+    <!-- Documents Menu -->
+    <menuitem id="menu_document" name="Documents" parent="menu_chatbot_root" 
+              action="action_document" sequence="20"/>
+    
+    <!-- Links Menu -->
+    <menuitem id="menu_link" name="Links" parent="menu_chatbot_root" 
+              action="action_link" sequence="30"/>
+</odoo>
