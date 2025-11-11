@@ -537,10 +537,13 @@ async function sendMessage() {
 
     try {
         const response = await fetch(
-            `${state.config.fastapiUrl}/api/public/chatbot/${chatbotId}/chat?api_key=${apiKey}`,
+            `${state.config.fastapiUrl}/api/public/chatbot/${chatbotId}/chat`,
             {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-API-Key': apiKey
+                },
                 body: JSON.stringify({
                     message: message,
                     session_id: state.sessionId
@@ -741,10 +744,13 @@ async function testChatAPI() {
     showLoading(true);
     try {
         const response = await fetch(
-            `${state.config.fastapiUrl}/api/public/chatbot/${chatbotId}/chat?api_key=${apiKey}`,
+            `${state.config.fastapiUrl}/api/public/chatbot/${chatbotId}/chat`,
             {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-API-Key': apiKey
+                },
                 body: JSON.stringify({ message })
             }
         );

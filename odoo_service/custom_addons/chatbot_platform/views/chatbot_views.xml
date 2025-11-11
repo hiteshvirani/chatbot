@@ -44,7 +44,14 @@
                             <field name="is_public"/>
                         </group>
                         <group>
-                            <field name="api_key_display" readonly="1"/>
+                            <field name="api_key_display" readonly="1" widget="text"/>
+                            <field name="api_key_full" invisible="1"/>
+                            <div class="oe_inline">
+                                <button name="action_show_full_api_key" type="object" string="Show Full Key" 
+                                        class="btn-primary" invisible="api_key_full"/>
+                                <button name="action_hide_api_key" type="object" string="Hide Key" 
+                                        class="btn-secondary" invisible="not api_key_full"/>
+                            </div>
                             <field name="allowed_domains"/>
                             <field name="created_at" readonly="1"/>
                             <field name="updated_at" readonly="1"/>

@@ -20,6 +20,7 @@ class ChatbotChatbot(models.Model):
     # API Key fields
     api_key_hash = fields.Char('API Key Hash', readonly=True)
     api_key_prefix = fields.Char('API Key Prefix', readonly=True)
+    api_key_full = fields.Char('Full API Key', readonly=True, help='Full API key - only shown after generation')
     api_key_display = fields.Char('API Key', compute='_compute_api_key_display', store=False)
     
     # Configuration
@@ -53,11 +54,15 @@ class ChatbotChatbot(models.Model):
             record.document_count = len(record.document_ids)
             record.link_count = len(record.link_ids)
 
-    @api.depends('api_key_prefix')
+    @api.depends('api_key_prefix', 'api_key_full')
     def _compute_api_key_display(self):
         for record in self:
-            if record.api_key_prefix:
-                record.api_key_display = f"{record.api_key_prefix}..."
+            if record.api_key_full:
+                # Show full key if available
+                record.api_key_display = record.api_key_full
+            elif record.api_key_prefix:
+                # Show partial key with option to reveal
+                record.api_key_display = f"{record.api_key_prefix}... (Click 'Show Full Key' to reveal)"
             else:
                 record.api_key_display = "Not generated"
 
@@ -98,10 +103,11 @@ class ChatbotChatbot(models.Model):
         # Hash for storage (never store plain text)
         key_hash = hashlib.sha256(api_key.encode()).hexdigest()
         
-        # Store hash and prefix
+        # Store hash, prefix, and full key
         self.write({
             'api_key_hash': key_hash,
-            'api_key_prefix': api_key[:12]  # Store first 12 chars for display
+            'api_key_prefix': api_key[:12],  # Store first 12 chars for display
+            'api_key_full': api_key  # Store full key for display
         })
         
         # Return the plain key only once for user to copy
@@ -128,6 +134,37 @@ class ChatbotChatbot(models.Model):
     def action_deactivate(self):
         """Deactivate the chatbot"""
         self.write({'status': 'archived'})
+
+    def action_show_full_api_key(self):
+        """Show the full API key"""
+        if not self.api_key_hash:
+            raise UserError("No API key generated yet.")
+        
+        # Temporarily show the full key by setting it in api_key_full
+        # This will trigger the compute method to show the full key
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Full API Key',
+                'message': f'Your full API key is: {self.api_key_full}\n\nPlease copy and save it securely.',
+                'type': 'info',
+                'sticky': True,
+            }
+        }
+
+    def action_hide_api_key(self):
+        """Hide the full API key (show only prefix)"""
+        self.write({'api_key_full': False})
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'API Key Hidden',
+                'message': 'API key is now hidden. Use "Show Full Key" to reveal it again.',
+                'type': 'info',
+            }
+        }
 
     def sync_to_fastapi(self):
         """Sync chatbot configuration to FastAPI"""
