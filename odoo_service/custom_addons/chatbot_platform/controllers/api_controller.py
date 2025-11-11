@@ -29,7 +29,7 @@ class ChatbotAPIController(http.Controller):
             _logger.error(f"Error validating API key: {str(e)}")
             return {'valid': False, 'error': 'Internal error'}
 
-    @http.route('/api/chatbot/<int:chatbot_id>/info', type='json', auth='none', methods=['GET'], csrf=False)
+    @http.route('/api/chatbot/<int:chatbot_id>/info', type='json', auth='none', methods=['GET', 'POST'], csrf=False)
     def get_chatbot_info(self, chatbot_id, **kwargs):
         """Get chatbot information for FastAPI"""
         try:
@@ -60,16 +60,19 @@ class ChatbotAPIController(http.Controller):
         """Create chatbot with documents and links in one API call"""
         # Handle CORS preflight
         if request.httprequest.method == 'OPTIONS':
-            return request.make_response(
+            _logger.info("CORS preflight request received")
+            response = request.make_response(
                 '',
                 headers=[
                     ('Access-Control-Allow-Origin', '*'),
                     ('Access-Control-Allow-Methods', 'POST, GET, OPTIONS'),
-                    ('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With'),
+                    ('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With, Accept'),
                     ('Access-Control-Max-Age', '86400'),
                 ],
-                status=200  # Use 200 instead of default
+                status=200
             )
+            _logger.info("CORS preflight response sent")
+            return response
         
         try:
             import base64
@@ -258,11 +261,13 @@ class ChatbotAPIController(http.Controller):
             return request.make_response(
                 response_json,
                 headers=[
-                    ('Content-Type', 'application/json'),
+                    ('Content-Type', 'application/json; charset=utf-8'),
                     ('Access-Control-Allow-Origin', '*'),
                     ('Access-Control-Allow-Methods', 'POST, GET, OPTIONS'),
-                    ('Access-Control-Allow-Headers', 'Content-Type'),
-                ]
+                    ('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With'),
+                    ('Access-Control-Allow-Credentials', 'false'),
+                ],
+                status=200
             )
             
         except Exception as e:

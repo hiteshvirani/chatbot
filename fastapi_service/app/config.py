@@ -14,7 +14,8 @@ class Settings(BaseSettings):
     internal_api_key: str = "change_me_internal_api_key"
     
     # Ollama
-    ollama_base_url: str = "http://ollama:11434"
+    ollama_base_url: str = "http://localhost:11434"
+    ollama_model: str = "mistral:7b"
     
     # Embedding Configuration
     embedding_model: str = "all-MiniLM-L6-v2"

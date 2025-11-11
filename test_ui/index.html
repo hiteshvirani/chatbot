@@ -3,163 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot Platform - Testing UI</title>
+    <title>Chatbot Platform - Test UI</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🤖 Chatbot Platform Testing UI</h1>
-            <p>Test all chatbot functionality from one place</p>
-            <a href="create.html" style="color: white; text-decoration: underline; margin-top: 10px; display: inline-block;">➕ Create Chatbot</a>
-        </header>
-
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="chat">💬 Chat Test</button>
-            <button class="tab-btn" data-tab="widget">📦 Widget Test</button>
-            <button class="tab-btn" data-tab="api">🔌 API Test</button>
-            <button class="tab-btn" data-tab="config">⚙️ Configuration</button>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>🤖 Chatbot Platform Test UI</h1>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
         </div>
+    </header>
 
-        <!-- Chat Test Tab -->
-        <div class="tab-content active" id="chat-tab">
-            <div class="card">
-                <h2>Chat Interface Test</h2>
-                <div class="chat-container">
-                    <div class="chat-messages" id="chatMessages">
-                        <div class="message bot">
-                            <div class="message-content">
-                                <p>Hello! I'm your chatbot assistant. How can I help you today?</p>
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="nav-section">
+                <button class="nav-item active" data-section="config">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">Configuration</span>
+                </button>
+                <button class="nav-item" data-section="create">
+                    <span class="nav-icon">➕</span>
+                    <span class="nav-label">Create Chatbot</span>
+                </button>
+                <button class="nav-item" data-section="chat">
+                    <span class="nav-icon">💬</span>
+                    <span class="nav-label">Chat Test</span>
+                </button>
+                <button class="nav-item" data-section="manage">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-label">Manage Chatbots</span>
+                </button>
+                <button class="nav-item" data-section="api">
+                    <span class="nav-icon">🔌</span>
+                    <span class="nav-label">API Testing</span>
+                </button>
+                <button class="nav-item" data-section="data">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Data Viewer</span>
+                </button>
+                <button class="nav-item" data-section="documents">
+                    <span class="nav-icon">📄</span>
+                    <span class="nav-label">Documents</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Configuration Section -->
+            <section class="content-section active" id="config-section">
+                <div class="card">
+                    <h2>⚙️ Configuration</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Odoo URL</label>
+                            <input type="text" id="odooUrl" placeholder="http://localhost:8069" />
+                        </div>
+                        <div class="form-group">
+                            <label>Database Name</label>
+                            <input type="text" id="odooDb" placeholder="odoo_c" />
+                        </div>
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="odooUsername" placeholder="admin" />
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="odooPassword" placeholder="admin" />
+                        </div>
+                        <div class="form-group">
+                            <label>FastAPI URL</label>
+                            <input type="text" id="fastapiUrl" placeholder="http://localhost:8000" />
+                        </div>
+                        <div class="form-group">
+                            <label>Internal API Key</label>
+                            <input type="text" id="internalApiKey" placeholder="internal_key_123" />
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="saveConfigBtn">💾 Save Configuration</button>
+                        <button class="btn btn-secondary" id="loadConfigBtn">📥 Load Saved</button>
+                        <button class="btn btn-secondary" id="testConnectionBtn">🔍 Test Connection</button>
+                    </div>
+                    <div id="configStatus" class="status-message"></div>
+                </div>
+            </section>
+
+            <!-- Create Chatbot Section -->
+            <section class="content-section" id="create-section">
+                <div class="card">
+                    <h2>➕ Create Chatbot</h2>
+                    <div class="info-box" style="background: rgba(33, 150, 243, 0.1); border: 1px solid var(--info); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                        <p><strong>ℹ️ Note:</strong> Make sure you've configured Odoo settings in the Configuration section first!</p>
+                        <p style="margin-top: var(--spacing-sm); font-size: 0.9rem;">Current config: <span id="createConfigStatus">Not configured</span></p>
+                    </div>
+                    <form id="createForm">
+                        <div class="form-group">
+                            <label>Chatbot Name *</label>
+                            <input type="text" id="chatbotName" required placeholder="My Awesome Chatbot" />
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="chatbotDescription" rows="3" placeholder="What does this chatbot do?"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="isPublic" checked />
+                                <span>Make this chatbot public</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>Allowed Domains (optional)</label>
+                            <input type="text" id="allowedDomains" placeholder="example.com, mysite.com" />
+                            <small>Leave empty to allow all domains</small>
+                        </div>
+
+                        <!-- Documents Section -->
+                        <div class="section-divider">
+                            <h3>📄 Documents</h3>
+                            <div class="upload-area" id="uploadArea">
+                                <p>📁 Drop files here or click to browse</p>
+                                <p class="upload-hint">Supports: PDF, DOCX, TXT</p>
+                                <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt" />
+                            </div>
+                            <div class="file-list" id="fileList"></div>
+                        </div>
+
+                        <!-- Links Section -->
+                        <div class="section-divider">
+                            <h3>🔗 Links</h3>
+                            <div class="link-input-group">
+                                <input type="url" id="linkInput" placeholder="https://example.com/article" />
+                                <button type="button" class="btn btn-secondary" id="addLinkBtn">Add Link</button>
+                            </div>
+                            <div id="linksList"></div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-large" id="createChatbotBtn">
+                            🚀 Create Chatbot
+                        </button>
+                    </form>
+                    <div id="createResult" class="result-container"></div>
+                </div>
+            </section>
+
+            <!-- Chat Test Section -->
+            <section class="content-section" id="chat-section">
+                <div class="card">
+                    <h2>💬 Chat Test</h2>
+                    <div class="chat-config">
+                        <div class="form-group">
+                            <label>Chatbot ID</label>
+                            <input type="number" id="chatChatbotId" placeholder="Enter chatbot ID" />
+                        </div>
+                        <div class="form-group">
+                            <label>API Key</label>
+                            <input type="text" id="chatApiKey" placeholder="Enter API key" />
+                        </div>
+                        <button class="btn btn-secondary" id="clearChatBtn">🗑️ Clear Chat</button>
+                    </div>
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message bot">
+                                <div class="message-content">
+                                    <p>Hello! I'm your chatbot assistant. How can I help you today?</p>
+                                </div>
                             </div>
                         </div>
+                        <div class="chat-input-container">
+                            <input type="text" id="chatInput" placeholder="Type your message..." />
+                            <button class="btn btn-primary" id="sendBtn">Send</button>
+                        </div>
                     </div>
-                    <div class="chat-input-container">
-                        <input type="text" id="chatInput" placeholder="Type your message..." />
-                        <button id="sendBtn">Send</button>
-                    </div>
+                    <div id="chatMetadata" class="metadata-container"></div>
                 </div>
-                <div class="chat-info">
-                    <div class="info-item">
-                        <label>Chatbot ID:</label>
-                        <input type="number" id="chatbotId" placeholder="Enter chatbot ID" value="1" />
-                    </div>
-                    <div class="info-item">
-                        <label>API Key:</label>
-                        <input type="text" id="apiKey" placeholder="Enter API key" />
-                    </div>
-                    <button class="btn-secondary" id="clearChatBtn">Clear Chat</button>
-                </div>
-            </div>
-        </div>
+            </section>
 
-        <!-- Widget Test Tab -->
-        <div class="tab-content" id="widget-tab">
-            <div class="card">
-                <h2>Widget Embed Test</h2>
-                <div class="widget-config">
+            <!-- Manage Chatbots Section -->
+            <section class="content-section" id="manage-section">
+                <div class="card">
+                    <h2>📋 Manage Chatbots</h2>
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="loadChatbotsBtn">🔄 Refresh List</button>
+                    </div>
+                    <div id="chatbotsList" class="list-container"></div>
+                </div>
+            </section>
+
+            <!-- API Testing Section -->
+            <section class="content-section" id="api-section">
+                <div class="card">
+                    <h2>🔌 API Testing</h2>
+                    <div class="api-tabs">
+                        <button class="api-tab active" data-api="health">Health</button>
+                        <button class="api-tab" data-api="chat">Chat</button>
+                        <button class="api-tab" data-api="widget">Widget</button>
+                        <button class="api-tab" data-api="internal">Internal</button>
+                    </div>
+                    <div id="apiContent" class="api-content"></div>
+                </div>
+            </section>
+
+            <!-- Data Viewer Section -->
+            <section class="content-section" id="data-section">
+                <div class="card">
+                    <h2>📊 Data Viewer</h2>
                     <div class="form-group">
-                        <label>Chatbot ID:</label>
-                        <input type="number" id="widgetChatbotId" placeholder="Enter chatbot ID" value="1" />
+                        <label>Chatbot ID</label>
+                        <input type="number" id="dataChatbotId" placeholder="Enter chatbot ID to view data" />
+                        <button class="btn btn-primary" id="loadDataBtn">📥 Load Data</button>
                     </div>
+                    <div id="dataContent" class="data-content"></div>
+                </div>
+            </section>
+
+            <!-- Documents Management Section -->
+            <section class="content-section" id="documents-section">
+                <div class="card">
+                    <h2>📄 Document Management</h2>
                     <div class="form-group">
-                        <label>API Key:</label>
-                        <input type="text" id="widgetApiKey" placeholder="Enter API key" />
+                        <label>Chatbot ID</label>
+                        <input type="number" id="docChatbotId" placeholder="Enter chatbot ID" />
+                        <button class="btn btn-primary" id="loadDocumentsBtn">📥 Load Documents</button>
                     </div>
-                    <button class="btn-primary" id="loadWidgetBtn">Load Widget</button>
+                    <div id="documentsContent" class="documents-content"></div>
                 </div>
-                <div class="widget-preview">
-                    <h3>Widget Preview</h3>
-                    <div id="widgetContainer"></div>
-                </div>
-                <div class="widget-code">
-                    <h3>Embed Code</h3>
-                    <textarea id="embedCode" readonly></textarea>
-                    <button class="btn-secondary" id="copyCodeBtn">Copy Code</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- API Test Tab -->
-        <div class="tab-content" id="api-tab">
-            <div class="card">
-                <h2>API Endpoint Testing</h2>
-                
-                <div class="api-section">
-                    <h3>1. Health Check</h3>
-                    <div class="api-test">
-                        <button class="btn-primary" id="healthCheckBtn">Test /health</button>
-                        <div class="api-response" id="healthResponse"></div>
-                    </div>
-                </div>
-
-                <div class="api-section">
-                    <h3>2. Chat Endpoint</h3>
-                    <div class="api-test">
-                        <div class="form-group">
-                            <label>Chatbot ID:</label>
-                            <input type="number" id="apiChatbotId" value="1" />
-                        </div>
-                        <div class="form-group">
-                            <label>API Key:</label>
-                            <input type="text" id="apiKeyInput" placeholder="Enter API key" />
-                        </div>
-                        <div class="form-group">
-                            <label>Message:</label>
-                            <input type="text" id="apiMessage" placeholder="Enter test message" />
-                        </div>
-                        <div class="form-group">
-                            <label>Session ID (optional):</label>
-                            <input type="text" id="sessionId" placeholder="Leave empty for new session" />
-                        </div>
-                        <button class="btn-primary" id="testChatBtn">Test /api/public/chat</button>
-                        <div class="api-response" id="chatResponse"></div>
-                    </div>
-                </div>
-
-                <div class="api-section">
-                    <h3>3. Widget Endpoint</h3>
-                    <div class="api-test">
-                        <div class="form-group">
-                            <label>Chatbot ID:</label>
-                            <input type="number" id="widgetApiChatbotId" value="1" />
-                        </div>
-                        <div class="form-group">
-                            <label>API Key:</label>
-                            <input type="text" id="widgetApiKeyInput" placeholder="Enter API key" />
-                        </div>
-                        <button class="btn-primary" id="testWidgetBtn">Test /api/public/widget</button>
-                        <div class="api-response" id="widgetResponse"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Configuration Tab -->
-        <div class="tab-content" id="config-tab">
-            <div class="card">
-                <h2>Configuration</h2>
-                <div class="form-group">
-                    <label>FastAPI Base URL:</label>
-                    <input type="text" id="baseUrl" value="http://localhost:8000" />
-                </div>
-                <div class="form-group">
-                    <label>Default Chatbot ID:</label>
-                    <input type="number" id="defaultChatbotId" value="1" />
-                </div>
-                <div class="form-group">
-                    <label>Default API Key:</label>
-                    <input type="text" id="defaultApiKey" placeholder="Enter default API key" />
-                </div>
-                <button class="btn-primary" id="saveConfigBtn">Save Configuration</button>
-                <div class="config-info">
-                    <h3>Current Configuration</h3>
-                    <pre id="configDisplay"></pre>
-                </div>
-            </div>
-        </div>
+            </section>
+        </main>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
-

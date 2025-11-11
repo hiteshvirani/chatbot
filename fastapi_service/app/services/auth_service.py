@@ -30,15 +30,31 @@ class AuthService:
             
             if response.status_code == 200:
                 result = response.json()
-                if result.get('valid'):
-                    # Get chatbot info
-                    info_response = await self.odoo_client.get(
-                        f"{settings.odoo_url}/api/chatbot/{chatbot_id}/info",
-                        headers={'Content-Type': 'application/json'}
-                    )
+                # Handle JSON-RPC format: {"jsonrpc": "2.0", "result": {"valid": true}}
+                # or direct format: {"valid": true}
+                if isinstance(result, dict):
+                    if 'result' in result:
+                        # JSON-RPC format
+                        validation_result = result.get('result', {})
+                        is_valid = validation_result.get('valid', False)
+                    else:
+                        # Direct format
+                        is_valid = result.get('valid', False)
                     
-                    if info_response.status_code == 200:
-                        return info_response.json()
+                    if is_valid:
+                        # Get chatbot info - Odoo JSON endpoint expects POST with JSON-RPC
+                        info_response = await self.odoo_client.post(
+                            f"{settings.odoo_url}/api/chatbot/{chatbot_id}/info",
+                            json={},  # Empty JSON body for JSON-RPC
+                            headers={'Content-Type': 'application/json'}
+                        )
+                        
+                        if info_response.status_code == 200:
+                            info_data = info_response.json()
+                            # Handle JSON-RPC format for info endpoint
+                            if isinstance(info_data, dict) and 'result' in info_data:
+                                return info_data.get('result', {})
+                            return info_data
             
             return None
             

@@ -37,7 +37,7 @@ class RAGService:
                 chatbot_id=chatbot_id,
                 query_embedding=query_embedding,
                 limit=5,
-                threshold=0.3
+                threshold=0.1  # Lower threshold to find more matches
             )
             
             # Step 3: Prepare context from retrieved documents
@@ -49,8 +49,8 @@ class RAGService:
                 if prompt['type'] == 'system'
             ]
             
-            # Step 5: Generate response (simple version without Ollama for now)
-            response_text = await self._generate_simple_response(
+            # Step 5: Generate response with Ollama
+            response_text = await self._generate_with_ollama(
                 message=message,
                 context=context,
                 system_prompts=system_prompts
@@ -67,7 +67,7 @@ class RAGService:
                 'sources': sources,
                 'session_id': session_id,
                 'metadata': {
-                    'model': 'simple',
+                    'model': settings.ollama_model,
                     'tokens_used': len(response_text.split()),
                     'response_time_ms': 0,
                     'context_chunks': len(similar_docs)
@@ -97,19 +97,66 @@ class RAGService:
         
         return "\n\n---\n\n".join(context_parts)
 
-    async def _generate_simple_response(
+    async def _generate_with_ollama(
         self,
         message: str,
         context: str,
         system_prompts: List[str]
     ) -> str:
-        """Generate simple response (without Ollama for now)"""
-        # For now, return a simple response based on context
-        if "No relevant information found" in context:
-            return "I don't have specific information about that in my knowledge base. Could you please provide more details or ask about something else?"
-        
-        # Simple response based on context
-        return f"Based on the information I have, here's what I can tell you: {context[:500]}..."
+        """Generate response using Ollama"""
+        try:
+            # Prepare system prompt
+            system_prompt = "\n".join(system_prompts) if system_prompts else (
+                "You are a helpful assistant. Use the provided context to answer questions accurately. "
+                "If the context doesn't contain relevant information, say so politely."
+            )
+            
+            # Prepare full prompt with context
+            if "No relevant information found" in context:
+                user_prompt = f"{message}\n\nNote: I don't have specific information about this in my knowledge base."
+            else:
+                user_prompt = f"""Based on the following context, please answer the question:
+
+Context:
+{context}
+
+Question: {message}
+
+Please provide a helpful and accurate answer based on the context provided. If the context doesn't fully answer the question, mention that."""
+            
+            # Call Ollama API
+            response = await self.ollama_client.post(
+                f"{settings.ollama_base_url}/api/generate",
+                json={
+                    "model": settings.ollama_model,
+                    "prompt": user_prompt,
+                    "system": system_prompt,
+                    "stream": False,
+                    "options": {
+                        "temperature": 0.7,
+                        "top_p": 0.9,
+                        "num_predict": 500
+                    }
+                },
+                timeout=120.0
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                return result.get("response", "I'm sorry, I couldn't generate a response.")
+            else:
+                _logger.error(f"Ollama API error: {response.status_code} - {response.text}")
+                # Fallback response
+                if "No relevant information found" in context:
+                    return "I don't have specific information about that in my knowledge base. Could you please provide more details or ask about something else?"
+                return f"Based on the information I have: {context[:300]}..."
+                
+        except Exception as e:
+            _logger.error(f"Error generating response with Ollama: {str(e)}")
+            # Fallback response
+            if "No relevant information found" in context:
+                return "I don't have specific information about that in my knowledge base. Could you please provide more details or ask about something else?"
+            return f"Based on the information I have: {context[:300]}..."
 
     async def _prepare_sources(self, chatbot_id: int, similar_docs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Prepare sources from similar documents"""

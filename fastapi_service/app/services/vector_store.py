@@ -93,10 +93,13 @@ class VectorStore:
         chatbot_id: int,
         query_embedding: List[float],
         limit: int = 5,
-        threshold: float = 0.7
+        threshold: float = 0.1
     ) -> List[Dict[str, Any]]:
         """Search for similar embeddings"""
         try:
+            # Convert embedding list to pgvector format string: '[0.1,0.2,0.3]'
+            embedding_str = '[' + ','.join(map(str, query_embedding)) + ']'
+            
             query = """
                 SELECT 
                     id,
@@ -106,18 +109,18 @@ class VectorStore:
                     content,
                     content_chunk_index,
                     metadata,
-                    1 - (embedding <=> $2) as similarity
+                    1 - (embedding <=> $2::vector) as similarity
                 FROM chatbot_embeddings 
                 WHERE chatbot_id = $1 
-                    AND 1 - (embedding <=> $2) > $3
-                ORDER BY embedding <=> $2
+                    AND 1 - (embedding <=> $2::vector) > $3
+                ORDER BY embedding <=> $2::vector
                 LIMIT $4
             """
             
             results = await execute_query(
                 query,
                 chatbot_id,
-                query_embedding,
+                embedding_str,
                 threshold,
                 limit,
                 fetch_all=True
