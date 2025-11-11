@@ -234,6 +234,18 @@ class ChatbotAPIController(http.Controller):
                     status=400
                 )
             
+            # Validate prompt is required
+            # Try both request.params and request.httprequest.form for form data
+            prompt_text = request.params.get('prompt', '') or request.httprequest.form.get('prompt', '')
+            prompt_text = prompt_text.strip() if prompt_text else ''
+            
+            if not prompt_text:
+                return request.make_response(
+                    json.dumps({'success': False, 'error': 'Prompt is required. Please provide a system prompt for your chatbot.'}),
+                    headers=[('Content-Type', 'application/json')],
+                    status=400
+                )
+            
             # Create chatbot
             chatbot_vals = {
                 'name': name,
@@ -319,6 +331,16 @@ class ChatbotAPIController(http.Controller):
                     }
                     link = request.env['chatbot.link'].create(link_vals)
                     link_ids.append(link.id)
+            
+            # Handle prompt (required)
+            prompt_vals = {
+                'chatbot_id': chatbot.id,
+                'prompt_text': prompt_text,
+                'prompt_type': 'system',
+                'order': 10,
+                'is_active': True
+            }
+            prompt = request.env['chatbot.prompt'].create(prompt_vals)
             
             # Prepare response data
             response_data = {

@@ -260,11 +260,22 @@ async function handleCreateChatbot(e) {
         return;
     }
     
+    const promptText = document.getElementById('chatbotPrompt').value.trim();
+    if (!promptText) {
+        showResult('createResult', 'error', `
+            <h3>❌ Prompt Required</h3>
+            <p>Please provide a system prompt for your chatbot. This defines how your chatbot should behave.</p>
+        `);
+        showLoading(false);
+        return;
+    }
+    
     const formData = new FormData();
     formData.append('name', document.getElementById('chatbotName').value);
     formData.append('description', document.getElementById('chatbotDescription').value);
     formData.append('is_public', document.getElementById('isPublic').checked);
     formData.append('allowed_domains', document.getElementById('allowedDomains').value || '');
+    formData.append('prompt', promptText);
     formData.append('links', JSON.stringify(state.selectedLinks));
     formData.append('db', state.config.odooDb);
     formData.append('login', state.config.odooUsername);

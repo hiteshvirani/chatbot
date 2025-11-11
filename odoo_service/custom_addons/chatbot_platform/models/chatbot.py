@@ -89,11 +89,34 @@ class ChatbotChatbot(models.Model):
         # Generate API key on creation
         chatbot = super().create(vals)
         chatbot.generate_api_key()
+        # Note: Prompt validation happens at API level, not here
+        # Prompts are created after chatbot creation in the controller
         return chatbot
-
+    
     def write(self, vals):
+        """Override write to validate prompts exist and update timestamp"""
         vals['updated_at'] = fields.Datetime.now()
-        return super().write(vals)
+        result = super().write(vals)
+        # Validate prompts exist after write (in case prompts were deleted)
+        # Skip validation during initial creation (when generate_api_key is called)
+        # We check if this write is only updating API key fields (initial setup)
+        for record in self:
+            # Only validate if:
+            # 1. This is an existing record (has id)
+            # 2. This is not just updating API key fields (initial setup)
+            # 3. No prompts exist (they should exist for existing chatbots)
+            api_key_fields = {'api_key_hash', 'api_key_prefix', 'api_key_full', 'updated_at'}
+            is_initial_setup = set(vals.keys()).issubset(api_key_fields)
+            
+            if record.id and not is_initial_setup and 'prompt_ids' not in vals:
+                if not record.prompt_ids.filtered('is_active'):
+                    raise UserError("At least one active prompt is required for the chatbot. Please add a system prompt.")
+        return result
+    
+    # Note: Prompt validation is handled at API level during creation
+    # and in write() method to prevent deletion of all prompts
+    # We don't use @api.constrains here because prompts are created
+    # after chatbot creation in the controller
 
     def generate_api_key(self):
         """Generate a new API key for the chatbot"""

@@ -90,16 +90,19 @@
                             </field>
                         </page>
                         
-                        <page string="Prompts" name="prompts">
-                            <field name="prompt_ids">
-                                <list editable="bottom">
-                                    <field name="prompt_type"/>
-                                    <field name="prompt_text"/>
-                                    <field name="order"/>
-                                    <field name="is_active"/>
-                                </list>
-                            </field>
-                        </page>
+                           <page string="Prompts" name="prompts">
+                               <div class="alert alert-warning" role="alert">
+                                   <strong>⚠️ Required:</strong> At least one active system prompt is required for the chatbot to function properly.
+                               </div>
+                               <field name="prompt_ids" required="1">
+                                   <list editable="bottom">
+                                       <field name="prompt_type"/>
+                                       <field name="prompt_text" required="1"/>
+                                       <field name="order"/>
+                                       <field name="is_active"/>
+                                   </list>
+                               </field>
+                           </page>
                         
                         <page string="Embed Code" name="embed_code">
                             <group>
