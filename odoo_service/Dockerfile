@@ -4,13 +4,11 @@ FROM odoo:18
 USER root
 RUN apt-get update && apt-get install -y \
     python3-pip \
-    python3-dev \
-    libpq-dev \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies for custom modules
-RUN pip3 install --no-cache-dir \
+RUN pip3 install --no-cache-dir --break-system-packages \
     requests \
     python-dotenv \
     PyPDF2 \
