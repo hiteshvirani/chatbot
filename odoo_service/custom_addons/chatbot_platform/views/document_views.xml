@@ -5,7 +5,7 @@
         <field name="name">chatbot.document.tree</field>
         <field name="model">chatbot.document</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name"/>
                 <field name="chatbot_id"/>
                 <field name="file_type"/>
@@ -13,7 +13,7 @@
                 <field name="vector_sync_status"/>
                 <field name="processed"/>
                 <field name="uploaded_at"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -55,7 +55,7 @@
     <record id="action_document" model="ir.actions.act_window">
         <field name="name">Documents</field>
         <field name="res_model">chatbot.document</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 
     <!-- Link Tree View -->
@@ -63,14 +63,14 @@
         <field name="name">chatbot.link.tree</field>
         <field name="model">chatbot.link</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="url"/>
                 <field name="title"/>
                 <field name="chatbot_id"/>
                 <field name="vector_sync_status"/>
                 <field name="processed"/>
                 <field name="created_at"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -112,6 +112,6 @@
     <record id="action_link" model="ir.actions.act_window">
         <field name="name">Links</field>
         <field name="res_model">chatbot.link</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 </odoo>

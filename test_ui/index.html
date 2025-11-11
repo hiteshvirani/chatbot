@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Platform - Testing UI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Chatbot Platform Testing UI</h1>
+            <p>Test all chatbot functionality from one place</p>
+            <a href="create.html" style="color: white; text-decoration: underline; margin-top: 10px; display: inline-block;">➕ Create Chatbot</a>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="chat">💬 Chat Test</button>
+            <button class="tab-btn" data-tab="widget">📦 Widget Test</button>
+            <button class="tab-btn" data-tab="api">🔌 API Test</button>
+            <button class="tab-btn" data-tab="config">⚙️ Configuration</button>
+        </div>
+
+        <!-- Chat Test Tab -->
+        <div class="tab-content active" id="chat-tab">
+            <div class="card">
+                <h2>Chat Interface Test</h2>
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot">
+                            <div class="message-content">
+                                <p>Hello! I'm your chatbot assistant. How can I help you today?</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chatInput" placeholder="Type your message..." />
+                        <button id="sendBtn">Send</button>
+                    </div>
+                </div>
+                <div class="chat-info">
+                    <div class="info-item">
+                        <label>Chatbot ID:</label>
+                        <input type="number" id="chatbotId" placeholder="Enter chatbot ID" value="1" />
+                    </div>
+                    <div class="info-item">
+                        <label>API Key:</label>
+                        <input type="text" id="apiKey" placeholder="Enter API key" />
+                    </div>
+                    <button class="btn-secondary" id="clearChatBtn">Clear Chat</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Widget Test Tab -->
+        <div class="tab-content" id="widget-tab">
+            <div class="card">
+                <h2>Widget Embed Test</h2>
+                <div class="widget-config">
+                    <div class="form-group">
+                        <label>Chatbot ID:</label>
+                        <input type="number" id="widgetChatbotId" placeholder="Enter chatbot ID" value="1" />
+                    </div>
+                    <div class="form-group">
+                        <label>API Key:</label>
+                        <input type="text" id="widgetApiKey" placeholder="Enter API key" />
+                    </div>
+                    <button class="btn-primary" id="loadWidgetBtn">Load Widget</button>
+                </div>
+                <div class="widget-preview">
+                    <h3>Widget Preview</h3>
+                    <div id="widgetContainer"></div>
+                </div>
+                <div class="widget-code">
+                    <h3>Embed Code</h3>
+                    <textarea id="embedCode" readonly></textarea>
+                    <button class="btn-secondary" id="copyCodeBtn">Copy Code</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Test Tab -->
+        <div class="tab-content" id="api-tab">
+            <div class="card">
+                <h2>API Endpoint Testing</h2>
+                
+                <div class="api-section">
+                    <h3>1. Health Check</h3>
+                    <div class="api-test">
+                        <button class="btn-primary" id="healthCheckBtn">Test /health</button>
+                        <div class="api-response" id="healthResponse"></div>
+                    </div>
+                </div>
+
+                <div class="api-section">
+                    <h3>2. Chat Endpoint</h3>
+                    <div class="api-test">
+                        <div class="form-group">
+                            <label>Chatbot ID:</label>
+                            <input type="number" id="apiChatbotId" value="1" />
+                        </div>
+                        <div class="form-group">
+                            <label>API Key:</label>
+                            <input type="text" id="apiKeyInput" placeholder="Enter API key" />
+                        </div>
+                        <div class="form-group">
+                            <label>Message:</label>
+                            <input type="text" id="apiMessage" placeholder="Enter test message" />
+                        </div>
+                        <div class="form-group">
+                            <label>Session ID (optional):</label>
+                            <input type="text" id="sessionId" placeholder="Leave empty for new session" />
+                        </div>
+                        <button class="btn-primary" id="testChatBtn">Test /api/public/chat</button>
+                        <div class="api-response" id="chatResponse"></div>
+                    </div>
+                </div>
+
+                <div class="api-section">
+                    <h3>3. Widget Endpoint</h3>
+                    <div class="api-test">
+                        <div class="form-group">
+                            <label>Chatbot ID:</label>
+                            <input type="number" id="widgetApiChatbotId" value="1" />
+                        </div>
+                        <div class="form-group">
+                            <label>API Key:</label>
+                            <input type="text" id="widgetApiKeyInput" placeholder="Enter API key" />
+                        </div>
+                        <button class="btn-primary" id="testWidgetBtn">Test /api/public/widget</button>
+                        <div class="api-response" id="widgetResponse"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Tab -->
+        <div class="tab-content" id="config-tab">
+            <div class="card">
+                <h2>Configuration</h2>
+                <div class="form-group">
+                    <label>FastAPI Base URL:</label>
+                    <input type="text" id="baseUrl" value="http://localhost:8000" />
+                </div>
+                <div class="form-group">
+                    <label>Default Chatbot ID:</label>
+                    <input type="number" id="defaultChatbotId" value="1" />
+                </div>
+                <div class="form-group">
+                    <label>Default API Key:</label>
+                    <input type="text" id="defaultApiKey" placeholder="Enter default API key" />
+                </div>
+                <button class="btn-primary" id="saveConfigBtn">Save Configuration</button>
+                <div class="config-info">
+                    <h3>Current Configuration</h3>
+                    <pre id="configDisplay"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

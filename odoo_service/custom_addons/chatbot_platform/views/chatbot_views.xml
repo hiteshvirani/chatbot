@@ -5,14 +5,14 @@
         <field name="name">chatbot.chatbot.tree</field>
         <field name="model">chatbot.chatbot</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name"/>
                 <field name="status"/>
                 <field name="document_count"/>
                 <field name="link_count"/>
                 <field name="is_public"/>
                 <field name="created_at"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -54,7 +54,7 @@
                     <notebook>
                         <page string="Documents" name="documents">
                             <field name="document_ids">
-                                <tree editable="bottom">
+                                <list editable="bottom">
                                     <field name="name"/>
                                     <field name="file_type"/>
                                     <field name="file_size"/>
@@ -63,13 +63,13 @@
                                     <button name="action_retry_sync" type="object" 
                                             string="Retry Sync" icon="fa-refresh"
                                             invisible="vector_sync_status == 'synced'"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         
                         <page string="Links" name="links">
                             <field name="link_ids">
-                                <tree editable="bottom">
+                                <list editable="bottom">
                                     <field name="url"/>
                                     <field name="title"/>
                                     <field name="vector_sync_status"/>
@@ -79,18 +79,18 @@
                                             invisible="vector_sync_status == 'synced'"/>
                                     <button name="action_rescrape" type="object" 
                                             string="Re-scrape" icon="fa-download"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         
                         <page string="Prompts" name="prompts">
                             <field name="prompt_ids">
-                                <tree editable="bottom">
+                                <list editable="bottom">
                                     <field name="prompt_type"/>
                                     <field name="prompt_text"/>
                                     <field name="order"/>
                                     <field name="is_active"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         
@@ -156,7 +156,7 @@
     <record id="action_chatbot" model="ir.actions.act_window">
         <field name="name">Chatbots</field>
         <field name="res_model">chatbot.chatbot</field>
-        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_mode">kanban,list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Create your first chatbot!

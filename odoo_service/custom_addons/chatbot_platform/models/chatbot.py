@@ -61,7 +61,7 @@ class ChatbotChatbot(models.Model):
             else:
                 record.api_key_display = "Not generated"
 
-    @api.depends('id', 'api_key_hash')
+    @api.depends('api_key_hash')
     def _compute_embed_code(self):
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', 'http://localhost:8000')
         for record in self:
