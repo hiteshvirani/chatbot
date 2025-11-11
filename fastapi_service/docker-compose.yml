@@ -31,7 +31,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-chatbot_user}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB:-chatbot_db}
       ODOO_URL: ${ODOO_URL:-http://localhost:8069}
       ODOO_API_KEY: ${ODOO_API_KEY}
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://localhost:11434}
+      OLLAMA_BASE_URL: http://localhost:11434
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
       EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-384}
       CHUNK_SIZE: ${CHUNK_SIZE:-1000}

@@ -7,6 +7,7 @@ class ChatRequest(BaseModel):
     message: str = Field(..., description="User message")
     session_id: Optional[str] = Field(None, description="Session ID for conversation continuity")
     api_key: Optional[str] = Field(None, description="API key (alternative to header)")
+    user_prompts: Optional[List[Dict[str, Any]]] = Field(None, description="User-level prompts from chatbot")
 
 
 class Source(BaseModel):

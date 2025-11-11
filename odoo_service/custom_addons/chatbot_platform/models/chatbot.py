@@ -20,7 +20,8 @@ class ChatbotChatbot(models.Model):
     # API Key fields
     api_key_hash = fields.Char('API Key Hash', readonly=True)
     api_key_prefix = fields.Char('API Key Prefix', readonly=True)
-    api_key_full = fields.Char('Full API Key', readonly=True, help='Full API key - only shown after generation')
+    api_key_full = fields.Char('Full API Key', readonly=True, help='Full API key - stored securely')
+    api_key_is_hidden = fields.Boolean('API Key Hidden', default=False, help='Whether to hide the full key in UI')
     api_key_display = fields.Char('API Key', compute='_compute_api_key_display', store=False)
     
     # Configuration
@@ -54,11 +55,11 @@ class ChatbotChatbot(models.Model):
             record.document_count = len(record.document_ids)
             record.link_count = len(record.link_ids)
 
-    @api.depends('api_key_prefix', 'api_key_full')
+    @api.depends('api_key_prefix', 'api_key_full', 'api_key_is_hidden')
     def _compute_api_key_display(self):
         for record in self:
-            if record.api_key_full:
-                # Show full key if available
+            if record.api_key_full and not record.api_key_is_hidden:
+                # Show full key if available and not hidden
                 record.api_key_display = record.api_key_full
             elif record.api_key_prefix:
                 # Show partial key with option to reveal
@@ -140,30 +141,26 @@ class ChatbotChatbot(models.Model):
         if not self.api_key_hash:
             raise UserError("No API key generated yet.")
         
-        # Temporarily show the full key by setting it in api_key_full
-        # This will trigger the compute method to show the full key
+        if not self.api_key_full:
+            raise UserError("API key not available. Please regenerate it.")
+        
+        # Show the full key by setting is_hidden to False
+        self.write({'api_key_is_hidden': False})
         return {
             'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Full API Key',
-                'message': f'Your full API key is: {self.api_key_full}\n\nPlease copy and save it securely.',
-                'type': 'info',
-                'sticky': True,
-            }
+            'tag': 'reload',
         }
 
     def action_hide_api_key(self):
         """Hide the full API key (show only prefix)"""
-        self.write({'api_key_full': False})
+        if not self.api_key_hash:
+            raise UserError("No API key generated yet.")
+        
+        # Hide the full key by setting is_hidden to True
+        self.write({'api_key_is_hidden': True})
         return {
             'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'API Key Hidden',
-                'message': 'API key is now hidden. Use "Show Full Key" to reveal it again.',
-                'type': 'info',
-            }
+            'tag': 'reload',
         }
 
     def sync_to_fastapi(self):
@@ -171,7 +168,7 @@ class ChatbotChatbot(models.Model):
         # Get FastAPI URL from environment variable first, then config parameter
         import os
         fastapi_url = os.getenv('FASTAPI_URL') or self.env['ir.config_parameter'].sudo().get_param('fastapi.url', 'http://localhost:8000')
-        internal_key = self.env['ir.config_parameter'].sudo().get_param('fastapi.internal_key')
+        internal_key = os.getenv('FASTAPI_INTERNAL_KEY') or self.env['ir.config_parameter'].sudo().get_param('fastapi.internal_key')
         
         if not internal_key:
             _logger.warning("FastAPI internal key not configured")
@@ -209,7 +206,7 @@ class ChatbotChatbot(models.Model):
         # Get FastAPI URL from environment variable first, then config parameter
         import os
         fastapi_url = os.getenv('FASTAPI_URL') or self.env['ir.config_parameter'].sudo().get_param('fastapi.url', 'http://localhost:8000')
-        internal_key = self.env['ir.config_parameter'].sudo().get_param('fastapi.internal_key')
+        internal_key = os.getenv('FASTAPI_INTERNAL_KEY') or self.env['ir.config_parameter'].sudo().get_param('fastapi.internal_key')
         
         for chatbot in self:
             if internal_key:

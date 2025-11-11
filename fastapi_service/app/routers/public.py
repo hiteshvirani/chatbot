@@ -53,11 +53,14 @@ async def chat_with_chatbot(
     """Chat with a chatbot"""
     try:
         # Generate response using RAG
+        # Master prompt is now handled by FastAPI config
+        # Pass only user prompts from request (set by Odoo)
         response = await rag_service.generate_response(
             chatbot_id=chatbot_id,
             message=chat_request.message,
             chatbot_info=chatbot_info,
-            session_id=chat_request.session_id
+            session_id=chat_request.session_id,
+            user_prompts=chat_request.user_prompts or []
         )
         
         return ChatResponse(**response)

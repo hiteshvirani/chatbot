@@ -14,14 +14,19 @@ _logger = logging.getLogger(__name__)
 class RAGService:
     
     def __init__(self):
-        self.ollama_client = httpx.AsyncClient(timeout=120.0)
+        # Increased timeout for Ollama - it can take time to generate responses
+        self.ollama_client = httpx.AsyncClient(
+            timeout=httpx.Timeout(300.0, connect=30.0),  # 5 minutes total, 30s connect
+            limits=httpx.Limits(max_keepalive_connections=5, max_connections=10)
+        )
 
     async def generate_response(
         self,
         chatbot_id: int,
         message: str,
         chatbot_info: Dict[str, Any],
-        session_id: Optional[str] = None
+        session_id: Optional[str] = None,
+        user_prompts: Optional[List[Dict[str, Any]]] = None
     ) -> Dict[str, Any]:
         """Generate response using RAG pipeline"""
         try:
@@ -43,17 +48,33 @@ class RAGService:
             # Step 3: Prepare context from retrieved documents
             context = self._prepare_context(similar_docs)
             
-            # Step 4: Get system prompts
-            system_prompts = [
-                prompt['text'] for prompt in chatbot_info.get('prompts', [])
-                if prompt['type'] == 'system'
-            ]
+            # Step 4: Prepare system prompts
+            # Priority: master_system_prompt (from FastAPI config) > user_prompts > chatbot_info prompts
+            system_prompts_list = []
+            
+            # Add master system prompt from FastAPI config first (highest priority, cannot be ignored)
+            master_prompt = settings.master_system_prompt
+            if master_prompt:
+                system_prompts_list.append(f"[MASTER PROMPT - DO NOT IGNORE]\n{master_prompt}")
+            
+            # Add user-level prompts from request
+            if user_prompts:
+                for prompt in sorted(user_prompts, key=lambda x: x.get('order', 999)):
+                    if prompt.get('type') == 'system' and prompt.get('text'):
+                        system_prompts_list.append(prompt['text'])
+            
+            # Fallback: Get prompts from chatbot_info (for backward compatibility)
+            if not system_prompts_list:
+                system_prompts_list = [
+                    prompt['text'] for prompt in chatbot_info.get('prompts', [])
+                    if prompt['type'] == 'system'
+                ]
             
             # Step 5: Generate response with Ollama
             response_text = await self._generate_with_ollama(
                 message=message,
                 context=context,
-                system_prompts=system_prompts
+                system_prompts=system_prompts_list
             )
             
             # Step 6: Prepare sources
@@ -106,10 +127,16 @@ class RAGService:
         """Generate response using Ollama"""
         try:
             # Prepare system prompt
-            system_prompt = "\n".join(system_prompts) if system_prompts else (
-                "You are a helpful assistant. Use the provided context to answer questions accurately. "
-                "If the context doesn't contain relevant information, say so politely."
-            )
+            # Combine all system prompts with clear separation
+            if system_prompts:
+                # Master prompt is first, then user prompts
+                system_prompt = "\n\n---\n\n".join(system_prompts)
+            else:
+                # Fallback default
+                system_prompt = (
+                    "You are a helpful assistant. Use the provided context to answer questions accurately. "
+                    "If the context doesn't contain relevant information, say so politely."
+                )
             
             # Prepare full prompt with context
             if "No relevant information found" in context:
@@ -137,8 +164,7 @@ Please provide a helpful and accurate answer based on the context provided. If t
                         "top_p": 0.9,
                         "num_predict": 500
                     }
-                },
-                timeout=120.0
+                }
             )
             
             if response.status_code == 200:
@@ -152,7 +178,9 @@ Please provide a helpful and accurate answer based on the context provided. If t
                 return f"Based on the information I have: {context[:300]}..."
                 
         except Exception as e:
+            import traceback
             _logger.error(f"Error generating response with Ollama: {str(e)}")
+            _logger.error(f"Traceback: {traceback.format_exc()}")
             # Fallback response
             if "No relevant information found" in context:
                 return "I don't have specific information about that in my knowledge base. Could you please provide more details or ask about something else?"

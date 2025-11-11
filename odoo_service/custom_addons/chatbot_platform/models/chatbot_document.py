@@ -133,7 +133,7 @@ class ChatbotDocument(models.Model):
         # Get FastAPI URL from environment variable first, then config parameter
         import os
         fastapi_url = os.getenv('FASTAPI_URL') or self.env['ir.config_parameter'].sudo().get_param('fastapi.url', 'http://localhost:8000')
-        internal_key = self.env['ir.config_parameter'].sudo().get_param('fastapi.internal_key')
+        internal_key = os.getenv('FASTAPI_INTERNAL_KEY') or self.env['ir.config_parameter'].sudo().get_param('fastapi.internal_key')
         
         if not internal_key:
             _logger.warning("FastAPI internal key not configured")
@@ -190,7 +190,7 @@ class ChatbotDocument(models.Model):
         # Get FastAPI URL from environment variable first, then config parameter
         import os
         fastapi_url = os.getenv('FASTAPI_URL') or self.env['ir.config_parameter'].sudo().get_param('fastapi.url', 'http://localhost:8000')
-        internal_key = self.env['ir.config_parameter'].sudo().get_param('fastapi.internal_key')
+        internal_key = os.getenv('FASTAPI_INTERNAL_KEY') or self.env['ir.config_parameter'].sudo().get_param('fastapi.internal_key')
         
         for record in self:
             if record.processed and internal_key:

@@ -1,5 +1,6 @@
 import json
 import logging
+import requests
 from odoo import http
 from odoo.http import request
 
@@ -54,6 +55,79 @@ class ChatbotAPIController(http.Controller):
         except Exception as e:
             _logger.error(f"Error getting chatbot info: {str(e)}")
             return {'error': 'Internal error'}
+
+    @http.route('/api/chatbot/<int:chatbot_id>/chat', type='json', auth='none', methods=['POST'], csrf=False, cors='*')
+    def chat_with_chatbot(self, chatbot_id, **kwargs):
+        """Chat endpoint that adds prompts and forwards to FastAPI"""
+        try:
+            # Get request data
+            data = json.loads(request.httprequest.data.decode('utf-8'))
+            message = data.get('message')
+            api_key = data.get('api_key') or request.httprequest.headers.get('X-API-Key')
+            session_id = data.get('session_id')
+            
+            if not message:
+                return {'error': 'Message is required'}
+            
+            if not api_key:
+                return {'error': 'API key is required'}
+            
+            # Validate API key
+            chatbot_model = request.env['chatbot.chatbot'].sudo()
+            is_valid = chatbot_model.validate_api_key(chatbot_id, api_key)
+            
+            if not is_valid:
+                return {'error': 'Invalid API key or chatbot not found'}
+            
+            # Get chatbot
+            chatbot = chatbot_model.browse(chatbot_id)
+            if not chatbot.exists() or chatbot.status != 'active':
+                return {'error': 'Chatbot not found or not active'}
+            
+            # Get user-level prompts from chatbot
+            user_prompts = []
+            for prompt in chatbot.prompt_ids.filtered('is_active'):
+                if prompt.prompt_type == 'system':
+                    user_prompts.append({
+                        'type': 'system',
+                        'text': prompt.prompt_text,
+                        'order': prompt.order
+                    })
+            
+            # Get FastAPI URL
+            import os
+            fastapi_url = os.getenv('FASTAPI_URL') or request.env['ir.config_parameter'].sudo().get_param('fastapi.url', 'http://localhost:8000')
+            
+            # Prepare request to FastAPI with user prompts only
+            # Master prompt is now handled by FastAPI
+            fastapi_payload = {
+                'message': message,
+                'session_id': session_id,
+                'user_prompts': user_prompts  # User-level prompts only
+            }
+            
+            # Forward to FastAPI
+            response = requests.post(
+                f"{fastapi_url}/api/public/chatbot/{chatbot_id}/chat",
+                json=fastapi_payload,
+                headers={
+                    'Content-Type': 'application/json',
+                    'X-API-Key': api_key
+                },
+                timeout=120
+            )
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                _logger.error(f"FastAPI error: {response.status_code} - {response.text}")
+                return {'error': f'FastAPI error: {response.status_code}'}
+                
+        except Exception as e:
+            _logger.error(f"Error in chat endpoint: {str(e)}")
+            import traceback
+            _logger.error(traceback.format_exc())
+            return {'error': f'Internal error: {str(e)}'}
 
     @http.route('/api/chatbot/create', type='http', auth='public', methods=['POST', 'OPTIONS'], csrf=False, cors='*')
     def create_chatbot(self, **kwargs):
